@@ -1106,9 +1106,10 @@ function Coder({ videoURL = "", initialPkg = null }) {
     if (!pkg || !sessionId) return;
     
     // Check if responses have already been saved for this participant ID
+    // Use completedAt to check if responses were actually saved to spreadsheet
     const existingCompletedSession = savedSessions.find(s => 
       s.meta?.participant_id === pkg.meta.participant_id && 
-      s.status === 'completed' &&
+      s.progress?.completedAt &&
       s.id !== sessionId
     );
     
@@ -1119,7 +1120,7 @@ function Coder({ videoURL = "", initialPkg = null }) {
     
     // Also check if current session is already completed
     const currentSession = savedSessions.find(s => s.id === sessionId);
-    if (currentSession?.status === 'completed') {
+    if (currentSession?.progress?.completedAt) {
       alert(`⚠️ Responses have already been saved for this session. Cannot save duplicate responses.`);
       return;
     }
@@ -1267,7 +1268,7 @@ function Coder({ videoURL = "", initialPkg = null }) {
               onClick={loadFromDropbox}
               disabled={!selectedId || loading}
             >
-              Load Selected Video
+              Load selected video
                 </button>
             <button 
               className="px-4 py-3 rounded-xl bg-gray-300 hover:bg-gray-400 transition-colors text-gray-800 font-medium" 
@@ -1427,23 +1428,21 @@ function Coder({ videoURL = "", initialPkg = null }) {
           {/* Phase 3: Completed */}
             {phase === 3 && (
             <div className="p-6 rounded-2xl border bg-white shadow-sm">
-              <h2 className="text-xl font-semibold mb-6">✅ Coding Complete</h2>
+              <h2 className="text-xl font-semibold mb-6">Coding complete!</h2>
               <div className="text-center py-12">
                 <div className="text-4xl mb-4">🎉</div>
                 <div className="text-xl font-semibold text-green-600 mb-2">All clips coded!</div>
-                <p className="text-gray-600 mb-6">Great work! Save your responses to Dropbox.</p>
+                <br/>
                 
                 {(() => {
-                  // Check if responses have already been saved for this participant ID
                   const existingCompletedSession = savedSessions.find(s => 
                     s.meta?.participant_id === pkg?.meta.participant_id && 
-                    s.status === 'completed' &&
+                    s.progress?.completedAt &&
                     s.id !== sessionId
                   );
                   
-                  // Also check if current session is already completed
                   const currentSession = savedSessions.find(s => s.id === sessionId);
-                  const isAlreadySaved = currentSession?.status === 'completed' || existingCompletedSession;
+                  const isAlreadySaved = currentSession?.progress?.completedAt || existingCompletedSession;
                   
                   return (
                     <>
@@ -1452,11 +1451,11 @@ function Coder({ videoURL = "", initialPkg = null }) {
                         onClick={saveResponsesToDropbox}
                         disabled={isAlreadySaved}
                       >
-                        💾 Save Responses to Dropbox
+                        Save responses to dropbox
                       </button>
                       {isAlreadySaved && (
                         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
-                          ⚠️ Responses have already been saved for this participant ID ({pkg?.meta.participant_id}). Cannot save duplicate responses.
+                          ⚠️ Responses have already been saved for this participant ID ({pkg?.meta.participant_id}).
                         </div>
                       )}
                       {!isAlreadySaved && (
