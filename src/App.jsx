@@ -1105,6 +1105,25 @@ function Coder({ videoURL = "", initialPkg = null }) {
   const saveResponsesToDropbox = async () => {
     if (!pkg || !sessionId) return;
     
+    // Check if responses have already been saved for this participant ID
+    const existingCompletedSession = savedSessions.find(s => 
+      s.meta?.participant_id === pkg.meta.participant_id && 
+      s.status === 'completed' &&
+      s.id !== sessionId
+    );
+    
+    if (existingCompletedSession) {
+      alert(`⚠️ Responses have already been saved for this participant ID (${pkg.meta.participant_id}). Cannot save duplicate responses.`);
+      return;
+    }
+    
+    // Also check if current session is already completed
+    const currentSession = savedSessions.find(s => s.id === sessionId);
+    if (currentSession?.status === 'completed') {
+      alert(`⚠️ Responses have already been saved for this session. Cannot save duplicate responses.`);
+      return;
+    }
+    
     const childQs = CHILD_QUESTIONS;
     const parentQs = PARENT_QUESTIONS;
 
@@ -1147,6 +1166,9 @@ function Coder({ videoURL = "", initialPkg = null }) {
       await DropboxService.appendToMasterSpreadsheet(rows);
       
       alert("✅ Responses saved to Dropbox successfully!");
+      
+      // Refresh sessions to update status
+      await refreshSessions();
     } catch (error) {
       console.error("Failed to save responses:", error);
       alert(`Failed to save responses: ${error.message}`);
@@ -1410,13 +1432,39 @@ function Coder({ videoURL = "", initialPkg = null }) {
                 <div className="text-4xl mb-4">🎉</div>
                 <div className="text-xl font-semibold text-green-600 mb-2">All clips coded!</div>
                 <p className="text-gray-600 mb-6">Great work! Save your responses to Dropbox.</p>
-                <button 
-                  className="px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors text-lg" 
-                  onClick={saveResponsesToDropbox}
-                >
-                  💾 Save Responses to Dropbox
-                </button>
-                <p className="text-xs text-gray-500 mt-3">Responses will be added to the master spreadsheet</p>
+                
+                {(() => {
+                  // Check if responses have already been saved for this participant ID
+                  const existingCompletedSession = savedSessions.find(s => 
+                    s.meta?.participant_id === pkg?.meta.participant_id && 
+                    s.status === 'completed' &&
+                    s.id !== sessionId
+                  );
+                  
+                  // Also check if current session is already completed
+                  const currentSession = savedSessions.find(s => s.id === sessionId);
+                  const isAlreadySaved = currentSession?.status === 'completed' || existingCompletedSession;
+                  
+                  return (
+                    <>
+                      <button 
+                        className="px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors text-lg disabled:opacity-50 disabled:cursor-not-allowed" 
+                        onClick={saveResponsesToDropbox}
+                        disabled={isAlreadySaved}
+                      >
+                        💾 Save Responses to Dropbox
+                      </button>
+                      {isAlreadySaved && (
+                        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                          ⚠️ Responses have already been saved for this participant ID ({pkg?.meta.participant_id}). Cannot save duplicate responses.
+                        </div>
+                      )}
+                      {!isAlreadySaved && (
+                        <p className="text-xs text-gray-500 mt-3">Responses will be added to the master spreadsheet</p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
               </div>
             )}
