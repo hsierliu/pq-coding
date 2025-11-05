@@ -154,11 +154,6 @@ function uid() {
 }
 
 /* =========================
- * Storage is now handled by Dropbox service
- * See src/services/dropbox.js
- * ========================= */
-
-/* =========================
  * Web Audio waveform
  * ========================= */
 async function extractWaveformFromURL(fileURL, targetBars = 1500) {
@@ -601,15 +596,9 @@ function Uploader({ onVideoLoaded, onPackageReady }) {
     const sessionId = `${meta.participant_id}_${Date.now()}`;
     
     try {
-      // Show loading state
       setUploadStatus({ message: "Uploading to dropbox... This may take a (long) while!", type: "loading" });
-      
-      // Upload video
       await DropboxService.uploadVideo(videoBlob, sessionId);
-      
-      // Save session data
       await DropboxService.saveSessionData(sessionId, pkg);
-      
       setUploadStatus({ message: "Successfully saved to dropbox! Coders can now access this video.", type: "success" });
       setTimeout(() => setUploadStatus({ message: "", type: "" }), 5000);
       onPackageReady && onPackageReady(pkg);
@@ -773,7 +762,7 @@ function Uploader({ onVideoLoaded, onPackageReady }) {
         </div>
       </div>
 
-      {/* Step 2: Upload Video & Split into Segments */}
+      {/* Step 2: Upload video & split into segments */}
       <div className="p-6 rounded-2xl border-2 bg-white shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <span className="text-2xl">②</span> Upload and segment video
@@ -947,7 +936,7 @@ function Uploader({ onVideoLoaded, onPackageReady }) {
               if (existingSession) {
                 return (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
-                    ⚠️ This video has already been uploaded before (participant ID: {meta.participant_id})
+                    ⚠️ This video has already been uploaded before (participant ID: {meta.participant_id}).
                   </div>
                 );
               }
@@ -1072,7 +1061,6 @@ function Coder({ videoURL = "", initialPkg = null }) {
     });
   };
   
-  // Check if a question should be shown based on dependencies
   const shouldShowQuestion = (question, segId) => {
     if (!question.dependsOn) return true;
     
@@ -1089,7 +1077,6 @@ function Coder({ videoURL = "", initialPkg = null }) {
   };
 
   const nextClip = async () => {
-    // Auto-save progress to Dropbox
     if (sessionId) {
       try {
         await DropboxService.saveProgress(sessionId, {
@@ -1115,7 +1102,6 @@ function Coder({ videoURL = "", initialPkg = null }) {
     if (!pkg || !sessionId) return;
     
     // Check if responses have already been saved for this participant ID
-    // Use completedAt to check if responses were actually saved to spreadsheet
     const existingCompletedSession = savedSessions.find(s => 
       s.meta?.participant_id === pkg.meta.participant_id && 
       s.progress?.completedAt &&
@@ -1607,7 +1593,7 @@ export default function App() {
         )}
 
         <div className="mt-8 text-xs text-gray-500 text-center">
-          <p>If any questions or issues arise, please feel free to contact hsierliu@fas.harvard.edu. Last edited: 10-29-2025. Happy coding :)</p>
+          <p>If any questions or issues arise, please feel free to contact hsierliu@fas.harvard.edu. Happy coding :)</p>
         </div>
       </div>
     </div>
