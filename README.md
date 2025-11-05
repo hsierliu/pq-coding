@@ -37,7 +37,6 @@ blind-coding-tool/
 │   ├── App.jsx              # Main application
 │   ├── services/
 │   │   └── dropbox.js       # Dropbox
-│   ├── App.css              # Formatting
 │   ├── index.css
 │   └── main.jsx             # Call files
 ├── public/

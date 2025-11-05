@@ -6,7 +6,6 @@ html, body, #root { height: 100%; }
 body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: #f9fafb; color: #111827; }
 
 /* Containers */
-.max-w-md { max-width: 28rem; margin-left: auto; margin-right: auto; }
 .max-w-6xl { max-width: 72rem; margin-left: auto; margin-right: auto; }
 .min-h-screen { min-height: 100vh; }
 .bg-gray-50 { background: #f9fafb; }
@@ -29,7 +28,7 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI
 .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05); }
 
 /* Spacing helpers */
-.p-1 { padding: .25rem; } .p-2 { padding: .5rem; } .p-3 { padding: .75rem; } .p-4 { padding: 1rem; } .p-6 { padding: 1.5rem; } .p-8 { padding: 2rem; }
+.p-2 { padding: .5rem; } .p-3 { padding: .75rem; } .p-4 { padding: 1rem; } .p-6 { padding: 1.5rem; } .p-8 { padding: 2rem; }
 .px-2 { padding-left: .5rem; padding-right: .5rem; }
 .px-3 { padding-left: .75rem; padding-right: .75rem; }
 .px-4 { padding-left: 1rem; padding-right: 1rem; }
@@ -66,7 +65,6 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI
 .text-2xl { font-size: 1.5rem; line-height: 2rem; }
 .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
 .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
-.text-5xl { font-size: 3rem; line-height: 1; }
 .font-medium { font-weight: 500; }
 .font-semibold { font-weight: 600; }
 .font-bold { font-weight: 700; }
@@ -87,8 +85,6 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI
 .text-white { color: #fff; }
 .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 
-/* Links */
-.underline { text-decoration: underline; }
 
 /* Buttons */
 button { cursor: pointer; }
@@ -133,20 +129,15 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .flex-col { flex-direction: column; }
 .items-start { align-items: flex-start; }
 .items-center { align-items: center; }
-.items-between { align-items: space-between; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
 .inline-flex { display: inline-flex; }
-.flex-wrap { flex-wrap: wrap; }
-.self-end { align-self: flex-end; }
 
 /* Layout: grid */
 .grid { display: grid; }
-.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
 .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
 .lg\:grid-cols-3 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-.col-span-1 { grid-column: span 1 / span 1; }
 .col-span-3 { grid-column: span 3 / span 3; }
 .col-span-9 { grid-column: span 9 / span 9; }
 .lg\:col-span-2 { grid-column: span 1 / span 1; }
@@ -174,22 +165,10 @@ label { display: block; }
 video { max-width: 100%; border-radius: .75rem; }
 
 /* Scroll areas */
-.max-h-56 { max-height: 14rem; }
-.max-h-64 { max-height: 16rem; }
-.max-h-80 { max-height: 20rem; }
 .overflow-auto { overflow: auto; }
 .overflow-y-auto { overflow-y: auto; }
 .pr-2 { padding-right: .5rem; }
 
-/* Small chips */
-.bg-gray-100 { background: #f3f4f6; }
-
-/* Helpers for the header toggle */
-button.tab {
-  padding: .375rem .75rem; border-radius: 1rem; font-size: .875rem; border: 1px solid transparent;
-}
-button.tab.active { background: #111827; color: #fff; }
-button.tab.inactive { background: #fff; color: #111827; }
 
 /* Tables */
 table { border-collapse: collapse; }
@@ -201,7 +180,6 @@ th, td { text-align: left; }
 .border-yellow-200 { border-color: #fde68a; }
 .border-yellow-300 { border-color: #fcd34d; }
 .border-green-200 { border-color: #bbf7d0; }
-.bg-gray-50 { background-color: #f9fafb; }
 .hover\:bg-gray-50:hover { background-color: #f9fafb; }
 .sticky { position: sticky; }
 .top-0 { top: 0; }
@@ -222,12 +200,6 @@ th, td { text-align: left; }
   to { transform: rotate(360deg); }
 }
 .animate-spin { animation: spin 1s linear infinite; }
-
-@keyframes progress {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-.animate-progress { animation: progress 2s ease-in-out infinite; }
 
 /* Borders */
 .border-t-transparent { border-top-color: transparent; }
