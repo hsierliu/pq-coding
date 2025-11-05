@@ -436,7 +436,7 @@ function SplitTimeline({
 /* =========================
  * Uploader
  * ========================= */
-function Uploader({ onVideoLoaded, onPackageReady, onOpenCoder }) {
+function Uploader({ onVideoLoaded, onPackageReady }) {
   const videoRef = useRef(null);
 
   const [videoURL, setVideoURL] = useState("");
