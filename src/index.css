@@ -223,6 +223,12 @@ th, td { text-align: left; }
 }
 .animate-spin { animation: spin 1s linear infinite; }
 
+@keyframes progress {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.animate-progress { animation: progress 2s ease-in-out infinite; }
+
 /* Borders */
 .border-t-transparent { border-top-color: transparent; }
 

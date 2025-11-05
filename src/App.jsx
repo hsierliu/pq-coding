@@ -86,6 +86,14 @@ const CHILD_QUESTIONS = [
     options: ["Yes", "No"],
   },
   {
+    id: "q1_transcription",
+    text: "Transcribe the child's responses:",
+    type: "text",
+    placeholder: "",
+    instruction: 'Please write the child\'s verbal response in "quotations" and the child\'s nonverbal responses in *asterisks.* For example: "nah" *shook head.* Transcription should not be limited to the child\'s first response.',
+    dependsOn: { q1: "Yes" },
+  },
+  {
     id: "q2",
     text: "What was the child's first response?",
     options: ["Verbal response", "Nonverbal response", "Both happened at the same time"],
@@ -594,7 +602,7 @@ function Uploader({ onVideoLoaded, onPackageReady, onOpenCoder }) {
     
     try {
       // Show loading state
-      setUploadStatus({ message: "Uploading to Dropbox... This may take a moment.", type: "loading" });
+      setUploadStatus({ message: "Uploading to dropbox... This may take a (long) while!", type: "loading" });
       
       // Upload video
       await DropboxService.uploadVideo(videoBlob, sessionId);
@@ -602,7 +610,7 @@ function Uploader({ onVideoLoaded, onPackageReady, onOpenCoder }) {
       // Save session data
       await DropboxService.saveSessionData(sessionId, pkg);
       
-      setUploadStatus({ message: "Successfully saved to Dropbox! Coders can now access this video.", type: "success" });
+      setUploadStatus({ message: "Successfully saved to dropbox! Coders can now access this video.", type: "success" });
       setTimeout(() => setUploadStatus({ message: "", type: "" }), 5000);
       onPackageReady && onPackageReady(pkg);
       
@@ -852,9 +860,9 @@ function Uploader({ onVideoLoaded, onPackageReady, onOpenCoder }) {
                           onChange={(e) => setSegAssign(s.index, { type: e.target.value })}
                         >
                             <option value="">— select type —</option>
-                            <option value="parent_question">Parent Question</option>
-                            <option value="child_response">Child Response</option>
-                            <option value="continued_response">Continued Response</option>
+                            <option value="parent_question">Parent question</option>
+                            <option value="child_response">Child response</option>
+                            <option value="continued_response">Continued response</option>
                             <option value="other">Other</option>
                         </select>
                           <button
@@ -987,6 +995,7 @@ function Coder({ videoURL = "", initialPkg = null }) {
   const [savedSessions, setSavedSessions] = useState([]);
   const [selectedId, setSelectedId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState({ message: "", type: "" }); // type: "loading" | "success" | "error" | ""
 
   const refreshSessions = async () => {
     setLoading(true);
@@ -1114,14 +1123,16 @@ function Coder({ videoURL = "", initialPkg = null }) {
     );
     
     if (existingCompletedSession) {
-      alert(`⚠️ Responses have already been saved for this participant ID (${pkg.meta.participant_id}). Cannot save duplicate responses.`);
+      setSaveStatus({ message: `⚠️ Responses have already been saved for this participant ID (${pkg.meta.participant_id}). Cannot save duplicate responses.`, type: "error" });
+      setTimeout(() => setSaveStatus({ message: "", type: "" }), 5000);
       return;
     }
     
     // Also check if current session is already completed
     const currentSession = savedSessions.find(s => s.id === sessionId);
     if (currentSession?.progress?.completedAt) {
-      alert(`⚠️ Responses have already been saved for this session. Cannot save duplicate responses.`);
+      setSaveStatus({ message: `⚠️ Responses have already been saved for this session. Cannot save duplicate responses.`, type: "error" });
+      setTimeout(() => setSaveStatus({ message: "", type: "" }), 5000);
       return;
     }
     
@@ -1155,6 +1166,9 @@ function Coder({ videoURL = "", initialPkg = null }) {
     });
 
     try {
+      // Show loading state
+      setSaveStatus({ message: "Saving responses to dropbox...", type: "loading" });
+      
       // Save this session's responses
       await DropboxService.saveProgress(sessionId, {
         phase: 3, // Mark as completed
@@ -1166,13 +1180,15 @@ function Coder({ videoURL = "", initialPkg = null }) {
       // Append to master spreadsheet
       await DropboxService.appendToMasterSpreadsheet(rows);
       
-      alert("✅ Responses saved to Dropbox successfully!");
+      setSaveStatus({ message: "✅ Responses saved to dropbox successfully!", type: "success" });
+      setTimeout(() => setSaveStatus({ message: "", type: "" }), 5000);
       
       // Refresh sessions to update status
       await refreshSessions();
     } catch (error) {
       console.error("Failed to save responses:", error);
-      alert(`Failed to save responses: ${error.message}`);
+      setSaveStatus({ message: `Failed to save responses: ${error.message}`, type: "error" });
+      setTimeout(() => setSaveStatus({ message: "", type: "" }), 5000);
     }
   };
 
@@ -1348,13 +1364,13 @@ function Coder({ videoURL = "", initialPkg = null }) {
               <div className="text-center py-12">
                 <div className="text-gray-500 mb-4">
                   <p className="mb-2"><span className="font-medium">Participant:</span> {pkg.meta.participant_id}</p>
-                  <p><span className="font-medium">Total segments:</span> {pkg.segments.length}</p>
+                  <br/>
                 </div>
                 <button 
                   className="px-6 py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors text-lg" 
                   onClick={() => startPhase(1)}
                 >
-                  ▶ Start Coding
+                  ▶ Start coding
                 </button>
               </div>
               </div>
@@ -1364,7 +1380,7 @@ function Coder({ videoURL = "", initialPkg = null }) {
             {phase > 0 && phase < 3 && current && (
             <div className="p-6 rounded-2xl border bg-white shadow-sm">
               <h2 className="text-xl font-semibold mb-6">
-                {phase === 1 ? 'Phase 1: Child Responses' : 'Phase 2: Parent Questions'}
+                {phase === 1 ? 'Phase 1: Child responses' : 'Phase 2: Parent questions'}
               </h2>
               
               <div className="grid grid-cols-2 gap-6 items-start">
@@ -1395,21 +1411,36 @@ function Coder({ videoURL = "", initialPkg = null }) {
                         return (
                           <div key={q.id} className="p-4 rounded-xl border bg-gray-50">
                             <div className="text-sm font-medium mb-3">{q.text}</div>
-                            <div className="space-y-2">
-                              {q.options.map((opt) => (
-                                <label key={opt} className="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded transition-colors">
-                            <input
-                              type="radio"
-                                    name={`q-${current.seg.id}-${q.id}`}
-                                    onChange={() => setAns(current.seg.id, q.id, opt)}
-                                    checked={(answers[current.seg.id]?.[q.id] || "") === opt}
-                                    className="w-4 h-4"
-                                  />
-                                  <span className="text-sm">{opt}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+                            {q.type === "text" ? (
+                              <div className="space-y-2">
+                                <textarea
+                                  value={answers[current.seg.id]?.[q.id] || ""}
+                                  onChange={(e) => setAns(current.seg.id, q.id, e.target.value)}
+                                  placeholder={q.placeholder || ""}
+                                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none resize-y"
+                                  rows={3}
+                                />
+                                {q.instruction && (
+                                  <p className="text-xs text-gray-500 mt-1">{q.instruction}</p>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {q.options.map((opt) => (
+                                  <label key={opt} className="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded transition-colors">
+                                    <input
+                                      type="radio"
+                                      name={`q-${current.seg.id}-${q.id}`}
+                                      onChange={() => setAns(current.seg.id, q.id, opt)}
+                                      checked={(answers[current.seg.id]?.[q.id] || "") === opt}
+                                      className="w-4 h-4"
+                                    />
+                                    <span className="text-sm">{opt}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                 </div>
@@ -1468,6 +1499,25 @@ function Coder({ videoURL = "", initialPkg = null }) {
               </div>
             )}
           </div>
+      )}
+      
+      {/* Save Status Bar */}
+      {saveStatus.message && (
+        <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-4 rounded-xl shadow-lg max-w-2xl w-auto ${
+          saveStatus.type === "loading" ? "bg-blue-600 text-white" :
+          saveStatus.type === "success" ? "bg-green-600 text-white" :
+          saveStatus.type === "error" ? "bg-red-600 text-white" :
+          "bg-gray-600 text-white"
+        }`}>
+          <div className="flex items-center gap-3">
+            {saveStatus.type === "loading" && (
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+            )}
+            {saveStatus.type === "success" && <span className="text-xl">✓</span>}
+            {saveStatus.type === "error" && <span className="text-xl">✗</span>}
+            <span className="font-medium">{saveStatus.message}</span>
+          </div>
+        </div>
       )}
     </div>
   );
