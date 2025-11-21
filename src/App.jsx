@@ -76,9 +76,6 @@ const ORDER_DEFS = {
   ],
 };
 
-/* =========================
- * Coder questions
- * ========================= */
 const CHILD_QUESTIONS = [
   {
     id: "q1",
@@ -102,45 +99,60 @@ const CHILD_QUESTIONS = [
   {
     id: "q3",
     text: 'Did the child verbally say a variation of "yes"? (yes, yah, uh huh)',
-    options: ["Yes", "No", "Unsure"],
+    options: ["Yes", "No"],
     dependsOn: { q2: ["Verbal response", "Both happened at the same time"] },
+    hasDropdown: true,
+    dropdownOptions: ["Yes", "Yah", "Yuh", "Uh huh", "Other"],
+    dropdownLabel: "What variation of 'yes'?",
   },
   {
     id: "q4",
     text: 'Did the child verbally say a variation of "no"? (no, not, nah, nuh uh)',
-    options: ["Yes", "No", "Unsure"],
+    options: ["Yes", "No"],
     dependsOn: { q2: ["Verbal response", "Both happened at the same time"] },
+    hasDropdown: true,
+    dropdownOptions: ["No", "Not", "Nah", "Nuh uh", "Other"],
+    dropdownLabel: "What variation of 'no'?",
   },
   {
     id: "q5",
     text: "Did the child nod or give other nonverbal indicators of affirmation?",
-    options: ["Yes", "No", "Unsure"],
+    options: ["Yes", "No"],
     dependsOn: { q2: ["Nonverbal response", "Both happened at the same time"] },
+    hasDropdown: true,
+    dropdownOptions: ["Nod", "Thumbs up", "Other"],
+    dropdownLabel: "What nonverbal indicator?",
   },
   {
     id: "q6",
     text: "Did the child shake their head or give other nonverbal indicators of negation?",
-    options: ["Yes", "No", "Unsure"],
+    options: ["Yes", "No"],
     dependsOn: { q2: ["Nonverbal response", "Both happened at the same time"] },
+    hasDropdown: true,
+    dropdownOptions: ["Shook head", "Thumbs down", "Finger wagging", "Other"],
+    dropdownLabel: "What nonverbal indicator?",
+  },
+  {
+    id: "q7",
+    text: 'Did the child respond with a label affirmatively?',
+    options: ["No", "Yes"],
+    dependsOn: { q2: ["Verbal response", "Both happened at the same time"] },
+    hasDropdown: true,
+    dropdownOptions: [],
+    dropdownLabel: "What was the label?",
+    dropdownType: "text",
+    instruction: 'Affirmative labels include "an X" or "that/there/it\'s an X". They do NOT include "that/there/it\'s not X\."',
   },
 ];
 
 const PARENT_QUESTIONS = [
   {
     id: "p1",
-    text: "Does this question encourage you to say yes, no, or neither?",
-    options: ["Yes", "No", "Neither"],
-  },
-  {
-    id: "p2",
-    text: "IF WE GOT ANOTHER QUESTION TO ASK",
-    options: ["Yes", "No", "Unsure"],
+    text: "Do you think this question is from a true trial (where the correct answer is \"yes\") or a false trial (where the correct answer is \"no\")?",
+    options: ["A true trial", "A false trial", "Neither, could go either way"],
   },
 ];
 
-/* =========================
- * Utils
- * ========================= */
 function timeToStrMs(t) {
   if (Number.isNaN(t) || t == null) return "-";
   const s = Math.max(0, t);
@@ -153,9 +165,6 @@ function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-/* =========================
- * Web Audio waveform
- * ========================= */
 async function extractWaveformFromURL(fileURL, targetBars = 1500) {
   try {
     const res = await fetch(fileURL);
@@ -193,9 +202,6 @@ async function extractWaveformFromURL(fileURL, targetBars = 1500) {
   }
 }
 
-/* =========================
- * RangePlayer (play [start,end])
- * ========================= */
 function RangePlayer({ fileURL, start, end, playing, onEnded, onReplay }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -232,9 +238,6 @@ function RangePlayer({ fileURL, start, end, playing, onEnded, onReplay }) {
   );
 }
 
-/* =========================
- * SplitTimeline with Zoom + Waveform
- * ========================= */
 function SplitTimeline({
   duration,
   current,
@@ -251,7 +254,6 @@ function SplitTimeline({
   const barRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // draw
   useEffect(() => {
     const canvas = canvasRef.current;
     const host = barRef.current;
@@ -262,14 +264,12 @@ function SplitTimeline({
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // background track
     ctx.fillStyle = "#f3f4f6";
     const pad = 8;
     const trackY = canvas.height / 2 - 6;
     const trackW = canvas.width - pad * 2;
     ctx.fillRect(pad, trackY, trackW, 12);
 
-    // waveform
     if (waveform && duration > 0) {
       const startIdx = Math.floor((viewStart / duration) * waveform.length);
       const endIdx = Math.ceil((viewEnd / duration) * waveform.length);
@@ -288,7 +288,6 @@ function SplitTimeline({
       ctx.stroke();
     }
 
-    // cuts
     ctx.fillStyle = "#111827";
     for (const c of cuts) {
       if (c < viewStart || c > viewEnd) continue;
@@ -296,7 +295,6 @@ function SplitTimeline({
       ctx.fillRect(Math.round(x) - 1, 16, 2, canvas.height - 32);
     }
 
-    // playhead
     if (current >= viewStart && current <= viewEnd) {
       const x = pad + ((current - viewStart) / (viewEnd - viewStart)) * (canvas.width - pad * 2);
       ctx.fillStyle = "#ef4444";
@@ -349,7 +347,6 @@ function SplitTimeline({
   };
   const fit = () => setView({ start: 0, end: duration || 0 });
 
-  // Touchpad gesture support
   useEffect(() => {
     const canvas = barRef.current;
     if (!canvas) return;
@@ -357,25 +354,20 @@ function SplitTimeline({
     const onWheel = (e) => {
       e.preventDefault();
       
-      // Get mouse position relative to timeline for zoom centering
       const rect = canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const pad = 8;
       const relativePos = (mouseX - pad) / (rect.width - pad * 2);
       const mouseTime = viewStart + relativePos * (viewEnd - viewStart);
 
-      // Check if this is a pinch gesture (ctrlKey is set for pinch zoom on trackpad)
       if (e.ctrlKey || e.metaKey) {
-        // Pinch zoom - zoom in/out around mouse position
         const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
         zoomAround(zoomFactor, mouseTime);
       } else {
-        // Two-finger scroll - pan left/right
         const panAmount = (e.deltaX || e.deltaY) * 0.001 * (viewEnd - viewStart);
         let newStart = viewStart + panAmount;
         let newEnd = viewEnd + panAmount;
         
-        // Keep within bounds
         if (newStart < 0) {
           newEnd -= newStart;
           newStart = 0;
@@ -428,9 +420,6 @@ function SplitTimeline({
   );
 }
 
-/* =========================
- * Uploader
- * ========================= */
 function Uploader({ onVideoLoaded, onPackageReady }) {
   const videoRef = useRef(null);
 
@@ -456,7 +445,6 @@ function Uploader({ onVideoLoaded, onPackageReady }) {
 
   const [cuts, setCuts] = useState([0, 0]);
   const [selectedSeg, setSelectedSeg] = useState(0);
-  // type: parent_question | child_response | continued_response | other
   const [assign, setAssign] = useState({});
   
   const [uploadStatus, setUploadStatus] = useState({ message: "", type: "" }); // type: "loading" | "success" | "error" | ""
@@ -491,7 +479,6 @@ function Uploader({ onVideoLoaded, onPackageReady }) {
     };
   }, [videoURL]);
 
-  // Spacebar play/pause (ignore while typing)
   useEffect(() => {
     const onKey = (e) => {
       if (e.code === "Space" || e.key === " ") {
@@ -501,7 +488,6 @@ function Uploader({ onVideoLoaded, onPackageReady }) {
         const v = videoRef.current;
         if (v) v.paused ? v.play() : v.pause();
       }
-      // optional: S to split, Backspace to remove
       if ((e.key === "s" || e.key === "S") && duration) {
         const tag = document.activeElement?.tagName;
         if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
@@ -602,8 +588,6 @@ function Uploader({ onVideoLoaded, onPackageReady }) {
       setUploadStatus({ message: "Successfully saved to dropbox! Coders can now access this video.", type: "success" });
       setTimeout(() => setUploadStatus({ message: "", type: "" }), 5000);
       onPackageReady && onPackageReady(pkg);
-      
-      // Refresh video status
       await refreshUploaderSessions();
     } catch (e) {
       console.error("Save error:", e);
@@ -927,9 +911,8 @@ function Uploader({ onVideoLoaded, onPackageReady }) {
                 ⚠️ Please select an order to load pairs
         </div>
             )}
-            {pairs.length > 0 && meta.participant_id && (() => {
-              // Check if this participant ID has already been uploaded
-              const existingSession = uploaderSessions.find(s => 
+              {pairs.length > 0 && meta.participant_id && (() => {
+              const existingSession = uploaderSessions.find(s =>
                 s.meta?.participant_id === meta.participant_id
               );
               
@@ -969,22 +952,19 @@ function Uploader({ onVideoLoaded, onPackageReady }) {
   );
 }
 
-/* =========================
- * Coder
- * ========================= */
 function Coder({ videoURL = "", initialPkg = null }) {
   const [vURL, setVURL] = useState(videoURL || "");
   const [pkg, setPkg] = useState(initialPkg || null);
   const [sessionId, setSessionId] = useState("");
-  const [phase, setPhase] = useState(0); // 0=pre, 1=child, 2=parent, 3=done
+  const [phase, setPhase] = useState(0);
   const [queue, setQueue] = useState([]);
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [answers, setAnswers] = useState({}); // { segId: { qIndex: value } }
+  const [answers, setAnswers] = useState({});
   const [savedSessions, setSavedSessions] = useState([]);
   const [selectedId, setSelectedId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [saveStatus, setSaveStatus] = useState({ message: "", type: "" }); // type: "loading" | "success" | "error" | ""
+  const [saveStatus, setSaveStatus] = useState({ message: "", type: "" });
 
   const refreshSessions = async () => {
     setLoading(true);
@@ -999,12 +979,10 @@ function Coder({ videoURL = "", initialPkg = null }) {
     }
   };
 
-  // Auto-load sessions on mount
   useEffect(() => {
     refreshSessions();
   }, []);
 
-  // Keep props as default if provided later
   useEffect(() => {
     if (videoURL && !vURL) setVURL(videoURL);
   }, [videoURL]);
@@ -1012,16 +990,14 @@ function Coder({ videoURL = "", initialPkg = null }) {
     if (initialPkg && !pkg) setPkg(initialPkg);
   }, [initialPkg]);
 
-  // Separate sessions into uncoded/in-progress and completed
   const uncodedSessions = savedSessions.filter(s => s.status !== 'completed');
   const completedSessions = savedSessions.filter(s => s.status === 'completed');
 
   const buildQueueInOrder = (type) => {
-    // Get segments for this type and randomize their order
     const segs = (pkg?.segments || [])
       .filter((s) => s.type === type)
-      .map((s) => ({ ...s, sortKey: Math.random() })) // Add random sort key
-      .sort((a, b) => a.sortKey - b.sortKey); // Randomize order
+      .map((s) => ({ ...s, sortKey: Math.random() }))
+      .sort((a, b) => a.sortKey - b.sortKey);
     const qset = type === "child_response" ? CHILD_QUESTIONS : PARENT_QUESTIONS;
     return segs.map((s) => ({ seg: s, questions: qset }));
   };
@@ -1041,17 +1017,29 @@ function Coder({ videoURL = "", initialPkg = null }) {
     setAnswers((prev) => {
       const segAnswers = { ...(prev[segId] || {}), [qId]: value };
       
-      // Clear answers for questions that depend on this question
       const questions = current?.questions || [];
+      const question = questions.find((q) => q.id === qId);
+      if (question?.hasDropdown && value !== "Yes") {
+        delete segAnswers[`${qId}_dropdown`];
+        delete segAnswers[`${qId}_dropdown_other`];
+      }
+      
+      if (qId.endsWith("_dropdown") && value !== "Other") {
+        const baseQId = qId.replace("_dropdown", "");
+        delete segAnswers[`${baseQId}_dropdown_other`];
+      }
+      
       questions.forEach((q) => {
         if (q.dependsOn && q.dependsOn[qId] !== undefined) {
-          // This question depends on the one we just answered, clear it
           delete segAnswers[q.id];
+          delete segAnswers[`${q.id}_dropdown`];
+          delete segAnswers[`${q.id}_dropdown_other`];
           
-          // Also clear questions that depend on this cleared question
           questions.forEach((q2) => {
             if (q2.dependsOn && q2.dependsOn[q.id] !== undefined) {
               delete segAnswers[q2.id];
+              delete segAnswers[`${q2.id}_dropdown`];
+              delete segAnswers[`${q2.id}_dropdown_other`];
             }
           });
         }
@@ -1073,6 +1061,40 @@ function Coder({ videoURL = "", initialPkg = null }) {
         if (answer !== requiredValue) return false;
       }
     }
+    return true;
+  };
+
+  const areAllRequiredQuestionsAnswered = () => {
+    if (!current) return false;
+    
+    const segId = current.seg.id;
+    const segAnswers = answers[segId] || {};
+    const questions = current.questions || [];
+    
+    for (const q of questions) {
+      if (!shouldShowQuestion(q, segId)) continue;
+      
+      const answer = segAnswers[q.id];
+      
+      if (!answer || answer === "") {
+        return false;
+      }
+      
+      if (q.hasDropdown && answer === "Yes") {
+        const dropdownValue = segAnswers[`${q.id}_dropdown`];
+        if (!dropdownValue || dropdownValue === "") {
+          return false;
+        }
+        
+        if (dropdownValue === "Other") {
+          const otherText = segAnswers[`${q.id}_dropdown_other`];
+          if (!otherText || otherText.trim() === "") {
+            return false;
+          }
+        }
+      }
+    }
+    
     return true;
   };
 
@@ -1101,7 +1123,6 @@ function Coder({ videoURL = "", initialPkg = null }) {
   const saveResponsesToDropbox = async () => {
     if (!pkg || !sessionId) return;
     
-    // Check if responses have already been saved for this participant ID
     const existingCompletedSession = savedSessions.find(s => 
       s.meta?.participant_id === pkg.meta.participant_id && 
       s.progress?.completedAt &&
@@ -1114,7 +1135,6 @@ function Coder({ videoURL = "", initialPkg = null }) {
       return;
     }
     
-    // Also check if current session is already completed
     const currentSession = savedSessions.find(s => s.id === sessionId);
     if (currentSession?.progress?.completedAt) {
       setSaveStatus({ message: `⚠️ Responses have already been saved for this session. Cannot save duplicate responses.`, type: "error" });
@@ -1125,7 +1145,6 @@ function Coder({ videoURL = "", initialPkg = null }) {
     const childQs = CHILD_QUESTIONS;
     const parentQs = PARENT_QUESTIONS;
 
-    // Build row data for this participant
     const pairIds = Array.from(new Set(pkg.pairs.map((p) => p.pairId)));
     const rows = pairIds.map((pid) => {
       const p = pkg.pairs.find((pp) => pp.pairId === pid) || { book: "", question: "", target: "" };
@@ -1144,32 +1163,43 @@ function Coder({ videoURL = "", initialPkg = null }) {
       const obj = { ...base };
       childAns.forEach((v, i) => {
         obj[`child_${childQs[i].id}`] = v;
+        if (childQs[i].hasDropdown) {
+          const dropdownValue = answers[childSeg?.id]?.[`${childQs[i].id}_dropdown`] ?? "";
+          obj[`child_${childQs[i].id}_dropdown`] = dropdownValue;
+          if (dropdownValue === "Other") {
+            const otherText = answers[childSeg?.id]?.[`${childQs[i].id}_dropdown_other`] ?? "";
+            obj[`child_${childQs[i].id}_dropdown_other`] = otherText;
+          }
+        }
       });
       parentAns.forEach((v, i) => {
         obj[`parent_${parentQs[i].id}`] = v;
+        if (parentQs[i].hasDropdown) {
+          const dropdownValue = answers[parentSeg?.id]?.[`${parentQs[i].id}_dropdown`] ?? "";
+          obj[`parent_${parentQs[i].id}_dropdown`] = dropdownValue;
+          if (dropdownValue === "Other") {
+            const otherText = answers[parentSeg?.id]?.[`${parentQs[i].id}_dropdown_other`] ?? "";
+            obj[`parent_${parentQs[i].id}_dropdown_other`] = otherText;
+          }
+        }
       });
       return obj;
     });
 
     try {
-      // Show loading state
       setSaveStatus({ message: "Saving responses to dropbox...", type: "loading" });
       
-      // Save this session's responses
       await DropboxService.saveProgress(sessionId, {
-        phase: 3, // Mark as completed
+        phase: 3,
         idx,
         answers,
         completedAt: new Date().toISOString(),
       });
 
-      // Append to master spreadsheet
       await DropboxService.appendToMasterSpreadsheet(rows);
       
       setSaveStatus({ message: "✅ Responses saved to dropbox successfully!", type: "success" });
       setTimeout(() => setSaveStatus({ message: "", type: "" }), 5000);
-      
-      // Refresh sessions to update status
       await refreshSessions();
     } catch (error) {
       console.error("Failed to save responses:", error);
@@ -1190,7 +1220,6 @@ function Coder({ videoURL = "", initialPkg = null }) {
     setPkg(sess.pkg);
       setSessionId(selectedId);
       
-      // Load progress if exists
       const progress = await DropboxService.loadProgress(selectedId);
       if (progress && progress.answers) {
         setAnswers(progress.answers);
@@ -1386,21 +1415,32 @@ function Coder({ videoURL = "", initialPkg = null }) {
                 </div>
                 
                 {/* RIGHT: Questions - Scrollable */}
-                <div className="flex flex-col justify-between" style={{ minHeight: "400px" }}>
+                <div className="flex flex-col justify-between" style={{ minHeight: "620px" }}>
                   <div>
                     <div className="text-sm px-3 py-1.5 rounded-lg mb-3 font-semibold">
                       Questions
                     </div>
-                    <div className="space-y-4 pr-2 pb-4" style={{ maxHeight: "295px", overflowY: "auto" }}>
+                    <div className="space-y-4 pr-2 pb-4" style={{ maxHeight: "515px", overflowY: "auto" }}>
                       {current.questions.map((q) => {
                         if (!shouldShowQuestion(q, current.seg.id)) return null;
+                        const currentAnswer = answers[current.seg.id]?.[q.id] || "";
+                        const dropdownId = `${q.id}_dropdown`;
+                        const dropdownValue = answers[current.seg.id]?.[dropdownId] || "";
+                        const otherTextId = `${q.id}_dropdown_other`;
+                        const otherTextValue = answers[current.seg.id]?.[otherTextId] || "";
+                        const showDropdown = q.hasDropdown && currentAnswer === "Yes";
+                        const showOtherText = showDropdown && dropdownValue === "Other";
+                        
                         return (
                           <div key={q.id} className="p-4 rounded-xl border bg-gray-50">
                             <div className="text-sm font-medium mb-3">{q.text}</div>
+                            {q.instruction && q.type !== "text" && (
+                              <p className="text-xs text-gray-500 mb-3">{q.instruction}</p>
+                            )}
                             {q.type === "text" ? (
                               <div className="space-y-2">
                                 <textarea
-                                  value={answers[current.seg.id]?.[q.id] || ""}
+                                  value={currentAnswer}
                                   onChange={(e) => setAns(current.seg.id, q.id, e.target.value)}
                                   placeholder={q.placeholder || ""}
                                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none resize-y"
@@ -1418,12 +1458,57 @@ function Coder({ videoURL = "", initialPkg = null }) {
                                       type="radio"
                                       name={`q-${current.seg.id}-${q.id}`}
                                       onChange={() => setAns(current.seg.id, q.id, opt)}
-                                      checked={(answers[current.seg.id]?.[q.id] || "") === opt}
+                                      checked={currentAnswer === opt}
                                       className="w-4 h-4"
                                     />
                                     <span className="text-sm">{opt}</span>
                                   </label>
                                 ))}
+                                {showDropdown && (
+                                  <div className="mt-3 pt-3 border-t border-gray-300">
+                                    <label className="block text-xs font-medium text-gray-700 mb-2">
+                                      {q.dropdownLabel}
+                                    </label>
+                                    {q.dropdownType === "text" ? (
+                                      <input
+                                        type="text"
+                                        value={dropdownValue}
+                                        onChange={(e) => setAns(current.seg.id, dropdownId, e.target.value)}
+                                        placeholder={q.dropdownLabel}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                                      />
+                                    ) : (
+                                      <>
+                                        <select
+                                          value={dropdownValue}
+                                          onChange={(e) => setAns(current.seg.id, dropdownId, e.target.value)}
+                                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none bg-white"
+                                        >
+                                          <option value="">— Select —</option>
+                                          {q.dropdownOptions?.map((opt) => (
+                                            <option key={opt} value={opt}>
+                                              {opt}
+                                            </option>
+                                          ))}
+                                        </select>
+                                        {showOtherText && (
+                                          <div className="mt-3">
+                                            <label className="block text-xs font-medium text-gray-700 mb-2">
+                                              Please specify:
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={otherTextValue}
+                                              onChange={(e) => setAns(current.seg.id, otherTextId, e.target.value)}
+                                              placeholder="Enter what was said..."
+                                              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
+                                            />
+                                          </div>
+                                        )}
+                                      </>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -1432,8 +1517,9 @@ function Coder({ videoURL = "", initialPkg = null }) {
                 </div>
                   </div>
                   <button 
-                    className="w-full px-4 py-3 rounded-xl bg-black text-white font-medium hover:bg-gray-800 transition-colors" 
+                    className="w-full px-4 py-3 rounded-xl bg-black text-white font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black" 
                     onClick={nextClip}
+                    disabled={!areAllRequiredQuestionsAnswered()}
                   >
                     Next ▶
                   </button>
@@ -1509,9 +1595,6 @@ function Coder({ videoURL = "", initialPkg = null }) {
   );
 }
 
-/* =========================
- * Root App
- * ========================= */
 export default function App() {
   const [mode, setMode] = useState(null);
   const [password, setPassword] = useState("");
