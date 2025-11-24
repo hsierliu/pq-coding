@@ -1,6 +1,6 @@
 # Polar Questions Coding
 
-This respository contains code for a blind-coding website, made specifically for our study on polar questions. This website allows a researcher to upload videos and split them into segments, and another researcher to blind-code child responses and parent questions. Video segments and responses (in CSV format) are saved on Dropbox. <br /><br />
+This respository contains code for a blind-coding website, made specifically for our study on polar questions. This website allows a researcher to upload videos and split them into segments, and another researcher to blind-code child responses and parent questions. Video segments and responses (in CSV format) are saved on Dropbox. <br />
 > [!NOTE]
 > To keep the videos secure, there's a password to enter the system. If you have any questions or run into any issues, please contact hsierliu@fas.harvard.edu. This repository was last updated *November 24, 2025*.
 
