@@ -4,7 +4,7 @@ This respository contains code for a blind-coding website, made specifically for
 
 > [!NOTE]
 > To keep the videos secure, there's a password to enter the system. If you have any questions or run into any issues, please contact hsierliu@fas.harvard.edu. This repository was last updated *November 24, 2025*.
-<br />
+
 
 ## Task procedure
 
