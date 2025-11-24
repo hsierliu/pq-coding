@@ -10,7 +10,7 @@ const ORDER_DEFS = {
     { book: "busy-babies", question: "a bear?", target: "Yes" },
     { book: "busy-babies", question: "a cow?", target: "Yes" },
     { book: "busy-babies", question: "a dog?", target: "No" },
-    { book: "busy-babies", question: "a bunny", target: "No" },
+    { book: "busy-babies", question: "a bunny?", target: "No" },
     { book: "new-house", question: "a ball?", target: "No" },
     { book: "new-house", question: "a block?", target: "Yes" },
     { book: "new-house", question: "a teddy bear?", target: "No" },
@@ -36,7 +36,7 @@ const ORDER_DEFS = {
     { book: "busy-babies", question: "a bear?", target: "Yes" },
     { book: "busy-babies", question: "a cow?", target: "Yes" },
     { book: "busy-babies", question: "a dog?", target: "No" },
-    { book: "busy-babies", question: "a bunny", target: "No" }
+    { book: "busy-babies", question: "a bunny?", target: "No" }
   ],
   "3": [
     { book: "busy-babies", question: "a bunny?", target: "Yes" },
@@ -87,56 +87,62 @@ const CHILD_QUESTIONS = [
     text: "Transcribe the child's responses:",
     type: "text",
     placeholder: "",
-    instruction: 'Please write the child\'s verbal response in "quotations" and the child\'s nonverbal responses in *asterisks.* For example: "nah" *shook head.* Transcription should not be limited to the child\'s first response.',
+    instruction: 'Please write the child\'s verbal response in "quotations" and nonverbal response in *asterisks.* For example: "nah" *shook head.* Transcription should not be limited to the child\'s first response. Transcribe the whole clip.',
     dependsOn: { q1: "Yes" },
   },
   {
     id: "q2",
-    text: "What was the child's first response?",
-    options: ["Verbal response", "Nonverbal response", "Both happened at the same time"],
+    text: "What response did the child provide?",
+    options: ["Verbal response", "Non-verbal response", "Both verbal and non-verbal responses"],
     dependsOn: { q1: "Yes" },
   },
   {
     id: "q3",
+    text: "What did the child respond with first?",
+    options: ["Verbal first", "Nonverbal first", "Same time"],
+    dependsOn: { q2: "Both verbal and non-verbal responses" },
+  },
+  {
+    id: "q4",
     text: 'Did the child verbally say a variation of "yes"? (yes, yah, uh huh)',
     options: ["Yes", "No"],
-    dependsOn: { q2: ["Verbal response", "Both happened at the same time"] },
+    dependsOn: { q2: ["Verbal response", "Both verbal and non-verbal responses"] },
     hasDropdown: true,
     dropdownOptions: ["Yes", "Yah", "Yuh", "Uh huh", "Other"],
     dropdownLabel: "What variation of 'yes'?",
   },
   {
-    id: "q4",
+    id: "q5",
     text: 'Did the child verbally say a variation of "no"? (no, not, nah, nuh uh)',
     options: ["Yes", "No"],
-    dependsOn: { q2: ["Verbal response", "Both happened at the same time"] },
+    dependsOn: { q2: ["Verbal response", "Both verbal and non-verbal responses"] },
     hasDropdown: true,
     dropdownOptions: ["No", "Not", "Nah", "Nuh uh", "Other"],
     dropdownLabel: "What variation of 'no'?",
   },
   {
-    id: "q5",
+    id: "q6",
     text: "Did the child nod or give other nonverbal indicators of affirmation?",
     options: ["Yes", "No"],
-    dependsOn: { q2: ["Nonverbal response", "Both happened at the same time"] },
+    dependsOn: { q2: ["Non-verbal response", "Both verbal and non-verbal responses"] },
     hasDropdown: true,
     dropdownOptions: ["Nod", "Thumbs up", "Other"],
     dropdownLabel: "What nonverbal indicator?",
   },
   {
-    id: "q6",
+    id: "q7",
     text: "Did the child shake their head or give other nonverbal indicators of negation?",
     options: ["Yes", "No"],
-    dependsOn: { q2: ["Nonverbal response", "Both happened at the same time"] },
+    dependsOn: { q2: ["Non-verbal response", "Both verbal and non-verbal responses"] },
     hasDropdown: true,
     dropdownOptions: ["Shook head", "Thumbs down", "Finger wagging", "Other"],
     dropdownLabel: "What nonverbal indicator?",
   },
   {
-    id: "q7",
+    id: "q8",
     text: 'Did the child respond with a label affirmatively?',
     options: ["No", "Yes"],
-    dependsOn: { q2: ["Verbal response", "Both happened at the same time"] },
+    dependsOn: { q2: ["Verbal response", "Both verbal and non-verbal responses"] },
     hasDropdown: true,
     dropdownOptions: [],
     dropdownLabel: "What was the label?",
@@ -233,7 +239,7 @@ function RangePlayer({ fileURL, start, end, playing, onEnded, onReplay }) {
         onClick={handleReplay}
         className="w-full px-4 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
       >
-        🔄 Replay Clip
+        ▶️ Play clip
       </button>
     </div>
   );
@@ -1051,18 +1057,53 @@ function Coder({ videoURL = "", initialPkg = null }) {
   };
   
   const shouldShowQuestion = (question, segId) => {
-    if (!question.dependsOn) return true;
-    
     const segAnswers = answers[segId] || {};
-    for (const [depQId, requiredValue] of Object.entries(question.dependsOn)) {
-      const answer = segAnswers[depQId];
-      if (Array.isArray(requiredValue)) {
-        if (!requiredValue.includes(answer)) return false;
-      } else {
-        if (answer !== requiredValue) return false;
+    
+    // Check simple dependsOn condition
+    if (question.dependsOn) {
+      let dependsOnMet = true;
+      for (const [depQId, requiredValue] of Object.entries(question.dependsOn)) {
+        const answer = segAnswers[depQId];
+        if (Array.isArray(requiredValue)) {
+          if (!requiredValue.includes(answer)) {
+            dependsOnMet = false;
+            break;
+          }
+        } else {
+          if (answer !== requiredValue) {
+            dependsOnMet = false;
+            break;
+          }
+        }
       }
+      if (dependsOnMet) return true;
     }
-    return true;
+    
+    // Check dependsOnOr condition (for questions with "Both" case)
+    if (question.dependsOnOr) {
+      let orConditionMet = true;
+      for (const [depQId, requiredValue] of Object.entries(question.dependsOnOr)) {
+        const answer = segAnswers[depQId];
+        if (Array.isArray(requiredValue)) {
+          if (!requiredValue.includes(answer)) {
+            orConditionMet = false;
+            break;
+          }
+        } else {
+          if (answer !== requiredValue) {
+            orConditionMet = false;
+            break;
+          }
+        }
+      }
+      if (orConditionMet) return true;
+    }
+    
+    // If no dependencies, show the question
+    if (!question.dependsOn && !question.dependsOnOr) return true;
+    
+    // If we have dependencies but neither condition was met, don't show
+    return false;
   };
 
   const areAllRequiredQuestionsAnswered = () => {
