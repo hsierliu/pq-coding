@@ -1217,10 +1217,11 @@ function Coder({ videoURL = "", initialPkg = null }) {
         obj[`child_${childQs[i].id}`] = v;
         if (childQs[i].hasDropdown) {
           const dropdownValue = answers[childSeg?.id]?.[`${childQs[i].id}_dropdown`] ?? "";
-          obj[`child_${childQs[i].id}_dropdown`] = dropdownValue;
           if (dropdownValue === "Other") {
             const otherText = answers[childSeg?.id]?.[`${childQs[i].id}_dropdown_other`] ?? "";
-            obj[`child_${childQs[i].id}_dropdown_other`] = otherText;
+            obj[`child_${childQs[i].id}_dropdown`] = otherText;
+          } else {
+            obj[`child_${childQs[i].id}_dropdown`] = dropdownValue;
           }
         }
       });
@@ -1228,10 +1229,11 @@ function Coder({ videoURL = "", initialPkg = null }) {
         obj[`parent_${parentQs[i].id}`] = v;
         if (parentQs[i].hasDropdown) {
           const dropdownValue = answers[parentSeg?.id]?.[`${parentQs[i].id}_dropdown`] ?? "";
-          obj[`parent_${parentQs[i].id}_dropdown`] = dropdownValue;
           if (dropdownValue === "Other") {
             const otherText = answers[parentSeg?.id]?.[`${parentQs[i].id}_dropdown_other`] ?? "";
-            obj[`parent_${parentQs[i].id}_dropdown_other`] = otherText;
+            obj[`parent_${parentQs[i].id}_dropdown`] = otherText;
+          } else {
+            obj[`parent_${parentQs[i].id}_dropdown`] = dropdownValue;
           }
         }
       });
