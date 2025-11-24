@@ -141,6 +141,7 @@ const CHILD_QUESTIONS = [
     dropdownOptions: [],
     dropdownLabel: "What was the label?",
     dropdownType: "text",
+    dropdownPlaceholder: "Type the label here...",
     instruction: 'Affirmative labels include "an X" or "that/there/it\'s an X". They do NOT include "that/there/it\'s not X\."',
   },
 ];
@@ -1474,7 +1475,7 @@ function Coder({ videoURL = "", initialPkg = null }) {
                                         type="text"
                                         value={dropdownValue}
                                         onChange={(e) => setAns(current.seg.id, dropdownId, e.target.value)}
-                                        placeholder={q.dropdownLabel}
+                                        placeholder={q.dropdownPlaceholder || q.dropdownLabel}
                                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
                                       />
                                     ) : (
@@ -1500,7 +1501,7 @@ function Coder({ videoURL = "", initialPkg = null }) {
                                               type="text"
                                               value={otherTextValue}
                                               onChange={(e) => setAns(current.seg.id, otherTextId, e.target.value)}
-                                              placeholder="Enter what was said..."
+                                              placeholder="Type here..."
                                               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none"
                                             />
                                           </div>
