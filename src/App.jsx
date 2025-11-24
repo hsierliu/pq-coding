@@ -17,7 +17,7 @@ const ORDER_DEFS = {
     { book: "new-house", question: "a cookie?", target: "No" },
     { book: "new-house", question: "an apple?", target: "Yes" },
     { book: "new-house", question: "a bottle?", target: "No" },
-    { book: "new-house", question: "a potty?", target: "Yes" },
+    { book: "new-house", question: "a cup?", target: "Yes" },
     { book: "new-house", question: "a car?", target: "Yes" }
   ],
   "2": [
@@ -27,7 +27,7 @@ const ORDER_DEFS = {
     { book: "new-house", question: "a cookie?", target: "No" },
     { book: "new-house", question: "an apple?", target: "Yes" },
     { book: "new-house", question: "a bottle?", target: "No" },
-    { book: "new-house", question: "a potty?", target: "Yes" },
+    { book: "new-house", question: "a cup?", target: "Yes" },
     { book: "new-house", question: "a car?", target: "Yes" },
     { book: "busy-babies", question: "a cat?", target: "No" },
     { book: "busy-babies", question: "a horse?", target: "Yes" },
@@ -1122,7 +1122,17 @@ function Coder({ videoURL = "", initialPkg = null }) {
   };
 
   const saveResponsesToDropbox = async () => {
-    if (!pkg || !sessionId) return;
+    if (!pkg) {
+      setSaveStatus({ message: "⚠️ Error: Session data is missing. Please reload the video.", type: "error" });
+      setTimeout(() => setSaveStatus({ message: "", type: "" }), 5000);
+      return;
+    }
+    
+    if (!sessionId) {
+      setSaveStatus({ message: "⚠️ Error: Session ID is missing. Please reload the video from the list.", type: "error" });
+      setTimeout(() => setSaveStatus({ message: "", type: "" }), 5000);
+      return;
+    }
     
     const existingCompletedSession = savedSessions.find(s => 
       s.meta?.participant_id === pkg.meta.participant_id && 
@@ -1547,22 +1557,28 @@ function Coder({ videoURL = "", initialPkg = null }) {
                   
                   const currentSession = savedSessions.find(s => s.id === sessionId);
                   const isAlreadySaved = currentSession?.progress?.completedAt || existingCompletedSession;
+                  const isMissingSessionId = !sessionId;
                   
                   return (
                     <>
                       <button 
                         className="px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors text-lg disabled:opacity-50 disabled:cursor-not-allowed" 
                         onClick={saveResponsesToDropbox}
-                        disabled={isAlreadySaved}
+                        disabled={isAlreadySaved || isMissingSessionId}
                       >
                         Save responses to dropbox
                       </button>
-                      {isAlreadySaved && (
+                      {isMissingSessionId && (
+                        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                          ⚠️ Error: Session ID is missing. Please reload the video from the list above.
+                        </div>
+                      )}
+                      {isAlreadySaved && !isMissingSessionId && (
                         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
                           ⚠️ Responses have already been saved for this participant ID ({pkg?.meta.participant_id}).
                         </div>
                       )}
-                      {!isAlreadySaved && (
+                      {!isAlreadySaved && !isMissingSessionId && (
                         <p className="text-xs text-gray-500 mt-3">Responses will be added to the master spreadsheet</p>
                       )}
                     </>

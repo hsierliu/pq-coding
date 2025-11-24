@@ -1,11 +1,11 @@
 # Polar Questions Coding
 
-This respository contains code for a blind-coding website, made specifically for our study on polar questions. This website allows a researcher to upload videos and split them into segments, and another researcher to blind-code child responses and parent questions. Video segments and responses (in CSV format) are saved on Dropbox.
+This respository contains code for a blind-coding website, made specifically for our study on polar questions. This website allows a researcher to upload videos and split them into segments, and another researcher to blind-code child responses and parent questions. Video segments and responses (in CSV format) are saved on Dropbox. <br />
 
 > [!NOTE]
-> To keep the videos secure, there's a password to enter the system. If you have any questions or run into any issues, please contact hsierliu@fas.harvard.edu. This repository was last updated *November 3, 2025*.
+> To keep the videos secure, there's a password to enter the system. If you have any questions or run into any issues, please contact hsierliu@fas.harvard.edu. This repository was last updated *November 24, 2025*.
 
-
+<br />
 ## Task procedure
 
 **Upload videos**
@@ -15,7 +15,7 @@ This respository contains code for a blind-coding website, made specifically for
    - Use spacebar to play/pause
    - Zoom in/out for precision
 3. Assign each segment a type and pair. Press "play" to ensure the correct segment is selected.
-   - **Type**: parent_question, child_response, parent_prompt, or other
+   - **Type**: parent_question, child_response, continued_response, or other
    - **Pair**: Which question this segment belongs to
 4. Click "upload to dropbox" to save each video.
 
@@ -27,24 +27,10 @@ This respository contains code for a blind-coding website, made specifically for
    - **Phase 2**: Parent question questions
 3. Click "save to dropbox" to save the responses
 
+
 ## Miscellaneous
 
-**Respository structure**
-
-```
-blind-coding-tool/
-├── src/
-│   ├── App.jsx              # Main application
-│   ├── services/
-│   │   └── dropbox.js       # Dropbox
-│   ├── index.css
-│   └── main.jsx             # Call files
-├── public/
-└── README.md                # This file
-```
-
-
-**Here's how to get the refresh token for Dropbox (if videos are not uploading or retrievable)**
+**How to get the refresh token for Dropbox (if videos are not uploading or retrievable)**
 
 1. Set up dropbox: 
    - Go to the Dropbox developer and open the App settings. 
@@ -65,13 +51,12 @@ blind-coding-tool/
    - Enter your **App Secret**
    - A browser window will open
    - Click **"Allow"** to authorize the app
-   - The script will display the refresh token
 
 5. The script will output something like:
    ```
-   VITE_DROPBOX_APP_KEY=your_app_key_here
-   VITE_DROPBOX_APP_SECRET=your_app_secret_here
-   VITE_DROPBOX_REFRESH_TOKEN=your_refresh_token_here
+   VITE_DROPBOX_APP_KEY = your_app_key_here
+   VITE_DROPBOX_APP_SECRET = your_app_secret_here
+   VITE_DROPBOX_REFRESH_TOKEN = your_refresh_token_here
    ```
 
 6. Enter the variables to the **.env** file (local) or under **environmental variables** on Vercel (full deployment).

@@ -1,6 +1,5 @@
 /**
- * Run this script once to get your refresh token:
- * node get-dropbox-refresh-token.js
+ * Run this script to get refresh token for Dropbox:
  */
 
 import express from 'express';
@@ -32,7 +31,6 @@ async function main() {
     process.exit(1);
   }
 
-  // Start a local server to receive the OAuth callback
   const app = express();
   const port = 3000;
   
@@ -48,7 +46,6 @@ async function main() {
     console.log(`\nLocal server started on http://localhost:${port}`);
   });
 
-  // Generate authorization URL
   const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${appKey}&response_type=code&token_access_type=offline&redirect_uri=http://localhost:${port}/oauth-callback`;
   
   console.log('\nOpening browser for authorization...');
@@ -58,7 +55,6 @@ async function main() {
   
   await open(authUrl);
 
-  // Wait for authorization
   await new Promise((resolve) => {
     server.on('close', resolve);
   });
@@ -70,7 +66,6 @@ async function main() {
 
   console.log('\nExchanging authorization code for refresh token...');
 
-  // Exchange authorization code for refresh token
   try {
     const response = await fetch('https://api.dropbox.com/oauth2/token', {
       method: 'POST',
