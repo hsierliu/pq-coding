@@ -1250,7 +1250,7 @@ function Coder({ videoURL = "", initialPkg = null }) {
 
       await DropboxService.appendToMasterSpreadsheet(rows);
       
-      setSaveStatus({ message: "✅ Responses saved to dropbox successfully!", type: "success" });
+      setSaveStatus({ message: "Responses saved to dropbox successfully!", type: "success" });
       setTimeout(() => setSaveStatus({ message: "", type: "" }), 5000);
       await refreshSessions();
     } catch (error) {
