@@ -46,7 +46,7 @@ const ORDER_DEFS = {
     { book: "busy-babies", question: "a horse?", target: "No" },
     { book: "busy-babies", question: "a bird?", target: "No" },
     { book: "busy-babies", question: "a pig?", target: "Yes" },
-    { book: "busy-babies", question: "a bunny", target: "Yes" },
+    { book: "busy-babies", question: "a cat?", target: "Yes" },
     { book: "new-house", question: "a teddy bear?", target: "Yes" },
     { book: "new-house", question: "a cup?", target: "No" },
     { book: "new-house", question: "a ball?", target: "Yes" },
@@ -72,7 +72,7 @@ const ORDER_DEFS = {
     { book: "busy-babies", question: "a horse?", target: "No" },
     { book: "busy-babies", question: "a bird?", target: "No" },
     { book: "busy-babies", question: "a pig?", target: "Yes" },
-    { book: "busy-babies", question: "a bunny", target: "Yes" }
+    { book: "busy-babies", question: "a cat?", target: "Yes" }
   ],
 };
 
